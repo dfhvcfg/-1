@@ -199,3 +199,124 @@ loan_default 1表示客户逾期，0表示客户未逾期
 
 数据集包含以下特征：
 ![image](https://github.com/dfhvcfg/-1/assets/57213191/a20c85e4-df2d-4441-96d8-a289b36f3653)
+
+
+
+
+
+
+
+
+# 用朴素贝叶斯进行垃圾邮件分类
+## 1. 朴素贝叶斯文本分类原理说明
+
+### 1.1 数据集介绍
+
+有如下训练数据, 记录了用户对餐厅的评价, 我们为每一条评论添加了相关标签, Positive 代表好评，Negative代表差评
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/76854a97-b672-4c21-812b-5b35dc1ebe99)
+
+
+### 1.2 模型训练
+
+#### 数据预处理
+
+首先我们将训练数据集中的所有单词都 转换为小写 ，并去掉标点符号
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/61b05662-bd5e-4d8e-9b53-28187585f1d3)
+
+
+#### 准备词袋
+
+统计好评(Positive) 和 差评(Negative) 中出现的单词的词频(单词出现的次数)，放到两个词袋中(bag of word)
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/b7c08ec1-043e-4bc6-ace3-9cdf9e07a4f4)
+
+
+到这儿我们的模型数据已经准备好, 可以进行预测了
+
+### 1.3 朴素贝叶斯分类
+
+#### 数据预处理
+
+按照训练阶段相同的方式处理数据
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/07b99b2a-897b-4437-8f51-b321f5650dcf)
+
+#### 接下来我们要将数据拆成一个一个单词
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/16fac2da-df18-430e-a16c-0b0be4d34f6d)
+
+
+#### 朴素贝叶斯分类
+
+此时我们要分别计算 P(好评|very,good,food,and, service) , P(差评|very,good,food,and,service)，并比较他们的大小
+
+根据贝叶斯公式
+![image](https://github.com/dfhvcfg/-1/assets/57213191/7f1f17fa-e15b-4804-b83d-2e89ca8a4323)
+
+我们需要计算 :
+![image](https://github.com/dfhvcfg/-1/assets/57213191/1745ead8-33de-4aa1-93b0-28c8f5a648ab)
+
+由于只需要比较大小 所以我们只需要计算:
+![image](https://github.com/dfhvcfg/-1/assets/57213191/ba009cce-c6cd-46e3-81ab-71cd72ea0fa1)
+
+
+先计算 P(好评) P(差评)
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/b8d99f24-5e00-4a7e-b53b-64066115de98)
+
+
+#### 朴素贝叶斯的独立假设
+
+P(very,good,food,and, service|好评) = P(very|好评) * P(good|好评) * P(food|好评) * P(and|好评) * P(service|好评)
+
+P(very,good,food,and, service|差评) = P(very|差评) * P(good|差评) * P(food|差评) * P(and|差评) * P(service|差评)
+
+统计待预测样本的单词在不同类别中的词频
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/9070f19c-4227-4825-a794-c7088cf16796)
+
+
+统计带预测样本的单词在不同类别中的概率
+![image](https://github.com/dfhvcfg/-1/assets/57213191/b53a5ba9-fd77-4455-9b41-a049ac58b138)
+
+计算P(very,good,food,and, service|好评) 和P(very,good,food,and, service|差评)
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/c4a43082-2da3-4779-8e23-f03c666cc182)
+
+
+由于在训练集中, 好评的词袋中没有and 和 service 差评的词袋中没有 good , and ,service 导致概率计算为0, 无法预测
+
+我们需要为其加上 拉普拉斯平滑系数
+![image](https://github.com/dfhvcfg/-1/assets/57213191/0bd8602c-9a25-4919-b6f0-1d58f243ed9b)
+
+一般α = 1 , m为特征数量, 本例为训练集中单词出现的总次数
+
+本例中训练集一共有32个不同的单词
+
+注: 后续计算与上面的公式略用区别 相当于N+m+1 但不影响最终的计算结果
+
+![image](https://github.com/dfhvcfg/-1/assets/57213191/ffdc55e8-f412-4e99-9b5c-a32f4ad9b0a8)
+
+
+统计词频
+![image](https://github.com/dfhvcfg/-1/assets/57213191/5bbfaf2d-cdfb-44a5-973c-15ffed2d4b3b)
+![image](https://github.com/dfhvcfg/-1/assets/57213191/ec36c31e-5e12-4fbd-8333-f77500d44d8d)
+
+计算概率
+![image](https://github.com/dfhvcfg/-1/assets/57213191/dc8479af-03b9-474d-a277-ec007848a656)
+
+计算P(very) * P(good) * P(food) * P(and) * P(service):
+![image](https://github.com/dfhvcfg/-1/assets/57213191/b6db8e29-9276-4e3a-87bd-cbaa369a16a4)
+
+计算最终结果
+![image](https://github.com/dfhvcfg/-1/assets/57213191/ebd20e9c-05d2-4a5a-8afe-2e8402efbd7f)
+
+从上面结果中看出 好评的概率>差评的概率, 所以该条评论为好评
+
+### 1.4 流程小结
+
+- 训练数据处理(去掉无关符号, 字母转小写)→ 统计训练数据词频→ 得到词袋(BoW)
+- 带预测样本数据处理(去掉无关符号, 字母转小写) → 统计带预测样本中单词在训练集中的词频→ 计算概率→得出分类结果
+
